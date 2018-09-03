@@ -103,7 +103,7 @@ public:
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
-  void UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z);
+  void update(MeasurementPackage meas_package, MatrixXd Zsig, int n_z);
 };
 
 #endif /* UKF_H */

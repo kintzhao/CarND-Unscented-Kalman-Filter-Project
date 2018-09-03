@@ -60,6 +60,7 @@ UKF::UKF() {
   lambda_ = 3 - n_aug_;
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
   weights_ = VectorXd(2 * n_aug_ + 1);
+  std::cout<<"weights size: "<<2 * n_aug_ + 1<<std::endl;
 }
 
 UKF::~UKF() {}
@@ -106,15 +107,18 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     }
 
     // Initialize weights
+    std::cout<<"weights_:"<<std::endl;
     weights_(0) = lambda_ / (lambda_ + n_aug_);
     for (int i = 1; i < weights_.size(); i++) {
       weights_(i) = 0.5 / (n_aug_ + lambda_);
+          std::cout<<" "<<weights_(i);
     }
+    std::cout<<" "<<std::endl;
 
     time_us_ = meas_package.timestamp_;
 
     is_initialized_ = true;
-
+    std::cout<<"init finish!"<<std::endl;
     return;
   }
 
@@ -219,7 +223,7 @@ void UKF::Prediction(double delta_t) {
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
   int n_z = 2;
   MatrixXd Zsig = Xsig_pred_.block(0, 0, n_z, 2 * n_aug_ + 1);
-  UpdateUKF(meas_package, Zsig, n_z);
+  update(meas_package, Zsig, n_z);
 }
 
 /**
@@ -242,10 +246,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Zsig(1, i) = atan2(p_y, p_x);
     Zsig(2, i) = (p_x * v1 + p_y * v2 ) / Zsig(0, i);
   }
-  UpdateUKF(meas_package, Zsig, n_z);
+  update(meas_package, Zsig, n_z);
 }
 
-void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z) {
+void UKF::update(MeasurementPackage meas_package, MatrixXd Zsig, int n_z) {
   VectorXd z_pred = VectorXd(n_z);
   z_pred  = Zsig * weights_;
   MatrixXd S = MatrixXd(n_z, n_z);
